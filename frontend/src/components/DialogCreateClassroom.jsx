@@ -1,183 +1,169 @@
-import {
-    Alert,
-    Box,
-    Button,
-    CircularProgress,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    TextField,
-} from "@mui/material";
-import React, { useRef, useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-    createClassroom,
-    fetchUserInfo,
-    resetCreateClassroom,
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
+import {
+  createClassroom,
+  resetCreateClassroom,
+  fetchUserInfo,
 } from "../redux/modules/Home/action";
-    
-function DialogCreateClassroom(props) {
-    const { openCreateDialog, handleCloseCreateDialog } = props;
 
-    const [emptyNameNotice, setEmptyNameNotice] = useState(false);
+function DialogCreateClassroom({ openCreateDialog, handleCloseCreateDialog }) {
+  const dispatch = useDispatch();
 
-    const inputName = useRef(null);
-    const inputDescription = useRef(null);
+  // Trạng thái lỗi và loading
+  const loading = useSelector((state) => state.createClassroomReducer.loading);
+  const error = useSelector((state) => state.createClassroomReducer.err);
+  const data = useSelector((state) => state.createClassroomReducer.data);
 
-    const dispatch = useDispatch();
-    const [render, setRender] = useState(false);
+  // Trạng thái lớp học (name, description)
+  const [state, setState] = useState({
+    name: "",
+    description: "",
+  });
 
-    const data = useSelector((state) => state.createClassroomReducer.data);
-    const loading = useSelector((state) => state.createClassroomReducer.loading);
-    const err = useSelector((state) => state.createClassroomReducer.err);
+  // Lỗi khi name bị trống
+  const [emptyNameNotice, setEmptyNameNotice] = useState(false);
 
-    // state để dispatch tới action Login
-    const [state, setState] = useState({
-        name: "",
-        description: "",
+  const inputName = useRef(null);
+  const inputDescription = useRef(null);
+
+  useEffect(() => {
+    // Reset trạng thái khi dialog đóng
+    setState({
+      name: "",
+      description: "",
     });
+  }, [openCreateDialog]);
 
-    useEffect(() => {
-        setState({
-            name: "",
-            description: "",
-        });
-    // eslint-disable-next-line
-    }, [render]);
+  // Hàm xử lý thay đổi giá trị input
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setState({
+      ...state,
+      [name]: value,
+    });
+  };
 
-    // sự kiện thay đổi giá trị của các trường đăng nhập
-    const handleChange = (e) => {
-        const name = e.target.name;
-        const value = e.target.value;
-        setState({
-            ...state,
-            [name]: value,
-        });
-    };
+  // Hàm xác nhận tên lớp học không được trống
+  const handleValidationName = () => {
+    if (!state.name) {
+      setEmptyNameNotice(true);
+    }
+  };
 
-    const handleValidationName = () => {
-        if (state.name === "") {
-            setEmptyNameNotice(true);
-        };
-    };
+  // Hàm gửi yêu cầu tạo lớp học
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-    // hàm thông báo lỗi khi nhập sai giá trị ở các trường đăng nhập tương ứng
-    const renderNotice = () => {
-        if (emptyNameNotice) {
-            setTimeout(() => setEmptyNameNotice(false), 1000);
-            return <Alert severity="error">Tên môn học không được để trống</Alert>;
-        };
+    if (!state.name) {
+      setEmptyNameNotice(true);
+      return;
+    }
 
-        if (err) {
-            handleClearInput();
-            setTimeout(handleReset, 1000);
-            return <Alert severity="error">{err?.response.data.message}</Alert>;
-        };
-    };
+    dispatch(createClassroom(state));
+  };
 
-    const handleClearInput = () => {
-        if (inputName.current) inputName.current.value = "";
+  // Hàm render thông báo lỗi
+  const renderNotice = () => {
+    if (emptyNameNotice) {
+      setTimeout(() => setEmptyNameNotice(false), 1000);
+      return <Alert severity="error">Tên lớp học không được để trống</Alert>;
+    }
 
-        if (inputDescription.current) inputDescription.current.value = "";
-    };
+    if (error) {
+      return <Alert severity="error">{error?.response?.data?.message}</Alert>;
+    }
+  };
 
-    // sự kiện submit form
-    const handleSubmit = (event) => {
-        event.preventDefault();
+  // Hàm render trạng thái loading
+  const renderLoading = () => {
+    if (loading) {
+      return (
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
+          <CircularProgress />
+        </Box>
+      );
+    }
+  };
 
-        if (state.name === "") {
-            setEmptyNameNotice(true);
-
-            return;
-        };
-
-        dispatch(createClassroom(state));
-        setRender(!render);
-    };
-
-    const handleReset = () => {
-        dispatch(resetCreateClassroom());
-    };
-
-    const renderLoading = () => {
-        if (loading) {
-            return (
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <CircularProgress />
-            </Box>
-            );
-        };
-    };
-
+  // Hàm reset và đóng dialog khi tạo lớp học thành công
+  useEffect(() => {
     if (data) {
-        alert("Tạo lớp học thành công");
-        handleReset();
-        handleCloseCreateDialog();
-        dispatch(fetchUserInfo());
-    };
+      alert("Tạo lớp học thành công");
+      dispatch(resetCreateClassroom());
+      handleCloseCreateDialog();
+      dispatch(fetchUserInfo());
+    }
+  }, [data, dispatch, handleCloseCreateDialog]);
 
-    return (
-        <div>
-            <Dialog
-                fullWidth
-                maxWidth="xs"
-                open={openCreateDialog}
-                onClose={handleCloseCreateDialog}
-            >
-                <DialogTitle sx={{ pb: 0 }}>Tạo lớp học</DialogTitle>
+  return (
+    <Dialog
+      fullWidth
+      maxWidth="xs"
+      open={openCreateDialog}
+      onClose={handleCloseCreateDialog}
+    >
+      <DialogTitle sx={{ pb: 0 }}>Tạo lớp học</DialogTitle>
 
-                <DialogContent>
-                    {renderLoading()}
-                    {renderNotice()}
+      <DialogContent>
+        {renderLoading()}
+        {renderNotice()}
 
-                    <Box component="form" noValidate sx={{ mt: 1 }}>
-                        <TextField
-                            inputRef={inputName}
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="name"
-                            label="Tên lớp học"
-                            type="text"
-                            name="name"
-                            autoComplete="off"
-                            onChange={handleChange}
-                            onBlur={handleValidationName}
-                        />
+        <Box component="form" noValidate sx={{ mt: 1 }}>
+          <TextField
+            inputRef={inputName}
+            margin="normal"
+            required
+            fullWidth
+            id="name"
+            label="Tên lớp học"
+            name="name"
+            autoComplete="off"
+            onChange={handleChange}
+            onBlur={handleValidationName}
+            value={state.name}
+          />
 
-                        <TextField
-                            inputRef={inputDescription}
-                            margin="normal"
-                            fullWidth
-                            name="description"
-                            label="Mô tả"
-                            type="text"
-                            id="Description"
-                            autoComplete="off"
-                            onChange={handleChange}
-                        />
-                    </Box>
-                </DialogContent>
+          <TextField
+            inputRef={inputDescription}
+            margin="normal"
+            fullWidth
+            name="description"
+            label="Mô tả"
+            type="text"
+            id="description"
+            autoComplete="off"
+            onChange={handleChange}
+            value={state.description}
+          />
+        </Box>
+      </DialogContent>
 
-                <DialogActions sx={{ padding: "0 24px 20px" }}>
-                    <Button
-                        variant="contained"
-                        color="error"
-                        onClick={handleCloseCreateDialog}
-                    >
-                        Hủy
-                    </Button>
+      <DialogActions sx={{ padding: "0 24px 20px" }}>
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleCloseCreateDialog}
+        >
+          Hủy
+        </Button>
 
-                    <Button variant="contained" onClick={handleSubmit}>
-                        Tạo lớp
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </div>
-    );
+        <Button variant="contained" onClick={handleSubmit}>
+          Tạo lớp
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 }
-    
+
 export default DialogCreateClassroom;
-    
