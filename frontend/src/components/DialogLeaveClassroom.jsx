@@ -6,7 +6,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useDispatch, useSelector } from "react-redux";
-import { Alert, Box, CircularProgress } from "@mui/material";
+import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
 import {
     fetchUserInfo,
     leaveClassroom,
@@ -19,6 +19,7 @@ function DialogLeaveClassroom(props) {
 
     const dispatch = useDispatch();
     const [render, setRender] = React.useState(false);
+    const [openSnackbar, setOpenSnackbar] = React.useState(false);
 
     const data = useSelector((state) => state.leaveClassroomReducer.data);
     const loading = useSelector((state) => state.leaveClassroomReducer.loading);
@@ -38,25 +39,31 @@ function DialogLeaveClassroom(props) {
         if (loading) {
             return (
                 <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <CircularProgress />
+                    <CircularProgress />
                 </Box>
             );
-        }; 
+        }
     };
 
-    const renderError = () => {
+    const handleSnackbarClose = () => {
+        setOpenSnackbar(false);
+    };
+
+    React.useEffect(() => {
+        if (data) {
+            alert("Rời lớp học thành công");
+            handleReset();
+            handleCloseLeaveDialog();
+            dispatch(fetchUserInfo());
+        }
+    }, [data, dispatch, handleCloseLeaveDialog]);
+
+    React.useEffect(() => {
         if (err) {
-            setTimeout(handleReset, 1000);
-            return <Alert severity="error">{err?.response.data.message}</Alert>;
-        };
-    };
-
-    if (data) {
-        alert("Rời lớp học thành công");
-        handleReset();
-        handleCloseLeaveDialog();
-        dispatch(fetchUserInfo());
-    };
+            setOpenSnackbar(true); // Show error snackbar when error occurs
+            setTimeout(handleReset, 1000); // Reset error after a while
+        }
+    }, [err]);
 
     return (
         <div>
@@ -74,7 +81,6 @@ function DialogLeaveClassroom(props) {
 
                 <DialogContent>
                     {renderLoading()}
-                    {renderError()}
 
                     <DialogContentText
                         sx={{ color: "inherit", mt: 1 }}
@@ -93,12 +99,23 @@ function DialogLeaveClassroom(props) {
                     >
                         Hủy
                     </Button>
-                    
+
                     <Button variant="contained" onClick={handleSubmit}>
                         Đồng ý
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Snackbar for error handling */}
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={handleSnackbarClose}
+            >
+                <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: "100%" }}>
+                    {err?.response?.data?.message || "Có lỗi xảy ra!"}
+                </Alert>
+            </Snackbar>
         </div>
     );
 }
