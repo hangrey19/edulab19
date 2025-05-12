@@ -15,6 +15,32 @@ import HomeworkDetail from "../containers/ClassroomTemplate/HomeworkDetail.jsx";
 import Homework from "../containers/ClassroomTemplate/Homework.jsx";
 import UpdateHomework from "../containers/ClassroomTemplate/UpdateHomework.jsx";
 import UpdateDocument from "../containers/ClassroomTemplate/UpdateDocument.jsx";
+import { Navigate, useLocation } from "react-router-dom";
+
+// Component để kiểm tra quyền truy cập
+const TeacherRoute = ({ Component }) => {
+  const role = localStorage.getItem("role");
+  const location = useLocation();
+
+  if (role !== "teacher") {
+    return <Navigate to="/unauthorized" state={{ from: location }} replace />;
+  }
+
+  return <Component />;
+};
+
+// Component để kiểm tra quyền truy cập classroom
+const ClassroomRoute = ({ Component }) => {
+  const role = localStorage.getItem("role");
+  const classroomId = localStorage.getItem("classroomId");
+  const location = useLocation();
+
+  if (!role || !classroomId) {
+    return <Navigate to="/home" state={{ from: location }} replace />;
+  }
+
+  return <Component />;
+};
 
 const routeAuthIntro = [
     {
@@ -32,6 +58,16 @@ const routeAuthIntro = [
         path: "/register",
         component: Register
     },
+    {
+        exact: false,
+        path: "/unauthorized",
+        component: () => (
+            <div className="container mt-5 text-center">
+                <h2>Không có quyền truy cập</h2>
+                <p>Bạn không có quyền truy cập vào trang này. Vui lòng liên hệ giáo viên nếu cần hỗ trợ.</p>
+            </div>
+        )
+    }
 ]
 
 const routeHome = [
@@ -55,61 +91,58 @@ const routeHome = [
         path: "/user-account",
         component: UserAccount
     },
-
-
-
 ]
 
 const routeClassroom = [
     {
         exact: false,
         path: "/classroom/:classroomId/stream",
-        component: Stream
+        component: (props) => <ClassroomRoute Component={() => <Stream {...props} />} />
     },
     {
         exact: false,
         path: "/classroom/:classroomId/member",
-        component: Member
+        component: (props) => <ClassroomRoute Component={() => <Member {...props} />} />
     },
     {
         exact: true,
         path: "/classroom/:classroomId/homework",
-        component: Homework
+        component: (props) => <ClassroomRoute Component={() => <Homework {...props} />} />
     },
     {
         exact: false,
         path: "/classroom/:classroomId/grade",
-        component: Grade
+        component: (props) => <ClassroomRoute Component={() => <Grade {...props} />} />
     },
     {
         exact: false,
         path: "/classroom/:classroomId/assign-homework",
-        component: AssignHomework
+        component: (props) => <TeacherRoute Component={() => <AssignHomework {...props} />} />
     },
     {
         exact: false,
         path: "/classroom/:classroomId/upload-document",
-        component: UploadDocument
+        component: (props) => <TeacherRoute Component={() => <UploadDocument {...props} />} />
     },
     {
         exact: false,
         path: "/classroom/:classroomId/homework/:homeworkId",
-        component: SubmitHomework
+        component: (props) => <ClassroomRoute Component={() => <SubmitHomework {...props} />} />
     },
     {
         exact: true,
         path: "/classroom/:classroomId/homework-detail/:homeworkId/",
-        component: HomeworkDetail
+        component: (props) => <ClassroomRoute Component={() => <HomeworkDetail {...props} />} />
     },
     {
         exact: false,
         path: "/classroom/:classroomId/homework-detail/:homeworkId/update",
-        component: UpdateHomework
+        component: (props) => <TeacherRoute Component={() => <UpdateHomework {...props} />} />
     },
     {
         exact: false,
         path: "/classroom/:classroomId/document/:documentId/update",
-        component: UpdateDocument
+        component: (props) => <TeacherRoute Component={() => <UpdateDocument {...props} />} />
     },
 ];
 

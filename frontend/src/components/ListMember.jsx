@@ -22,6 +22,8 @@ import {
   resetDeleteStudent,
 } from "../redux/modules/People/action";
 import Loading from "./Loading";
+import { TextField, InputAdornment } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -188,6 +190,9 @@ function ListMember() {
     }
   };
 
+  // Kiểm tra xem người dùng có phải là giáo viên của lớp không
+  const isClassTeacher = role === "teacher";
+
   return (
     <div className="list-member">
       <div className="container">
@@ -242,9 +247,9 @@ function ListMember() {
                   <StyledTableCell align="right">Gmail</StyledTableCell>
 
                   <StyledTableCell align="right">Số điện thoại</StyledTableCell>
-                  {role === "teacher" ? (
-                    <StyledTableCell align="right"></StyledTableCell>
-                  ) : null}
+                  {isClassTeacher && (
+                    <StyledTableCell align="right">Thao tác</StyledTableCell>
+                  )}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -279,7 +284,7 @@ function ListMember() {
                       <StyledTableCell align="right">
                         {row.phoneNumber}
                       </StyledTableCell>
-                      {role === "teacher" ? (
+                      {isClassTeacher && (
                         <StyledTableCell align="right">
                           <div
                             className="btn btn-delete"
@@ -288,7 +293,7 @@ function ListMember() {
                             Xoá
                           </div>
                         </StyledTableCell>
-                      ) : null}
+                      )}
                     </StyledTableRow>
                   ))}
               </TableBody>
@@ -296,37 +301,40 @@ function ListMember() {
           </TableContainer>
         </div>
 
-        <div className="Dialog-delete">
-          <Dialog
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">Xoá học sinh</DialogTitle>
-            <DialogContent>
-              {renderLoading()}
-              {renderError()}
-              {renderSuccess()}
-              <DialogContentText id="alert-dialog-description">
-                Thao tác này sẽ không thể hoàn tác. Bạn vẫn muốn xoá
-                {" " + studentDelete?.fullName} ra khỏi lớp chứ?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <button onClick={handleClose} className="btn btn-primary">
-                Huỷ
-              </button>
-              <button
-                onClick={handleDelete}
-                className="btn btn-danger"
-                autoFocus
-              >
-                Xoá
-              </button>
-            </DialogActions>
-          </Dialog>
-        </div>
+        {/* Dialog xóa học sinh - chỉ hiển thị cho giáo viên */}
+        {isClassTeacher && (
+          <div className="Dialog-delete">
+            <Dialog
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+            >
+              <DialogTitle id="alert-dialog-title">Xoá học sinh</DialogTitle>
+              <DialogContent>
+                {renderLoading()}
+                {renderError()}
+                {renderSuccess()}
+                <DialogContentText id="alert-dialog-description">
+                  Thao tác này sẽ không thể hoàn tác. Bạn vẫn muốn xoá
+                  {" " + studentDelete?.fullName} ra khỏi lớp chứ?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <button onClick={handleClose} className="btn btn-primary">
+                  Huỷ
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="btn btn-danger"
+                  autoFocus
+                >
+                  Xoá
+                </button>
+              </DialogActions>
+            </Dialog>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -11,17 +11,19 @@ import DialogLeaveClassroom from "./DialogLeaveClassroom";
 import DialogGetCodeClassroom from "./DialogGetCodeClassroom";
 
 function OptionMenu({ role, handleOpenGetCodeDialog, handleOpenLeaveDialog, handleOpenUpdateDialog, handleOpenDeleteDialog }) {
-    const options =
-        role === "student"
-            ? [
-                { title: "Lấy mã lớp", handleClick: handleOpenGetCodeDialog },
-                { title: "Rời lớp học", handleClick: handleOpenLeaveDialog },
-            ]
-            : [
-                { title: "Lấy mã lớp", handleClick: handleOpenGetCodeDialog },
-                { title: "Chỉnh sửa", handleClick: handleOpenUpdateDialog },
-                { title: "Xóa lớp học", handleClick: handleOpenDeleteDialog },
-            ];
+    // Kiểm tra xem người dùng có phải là giáo viên của lớp không
+    const isClassTeacher = role === "teacher";
+    
+    const options = isClassTeacher
+        ? [
+            { title: "Lấy mã lớp", handleClick: handleOpenGetCodeDialog },
+            { title: "Chỉnh sửa", handleClick: handleOpenUpdateDialog },
+            { title: "Xóa lớp học", handleClick: handleOpenDeleteDialog },
+        ]
+        : [
+            { title: "Lấy mã lớp", handleClick: handleOpenGetCodeDialog },
+            { title: "Rời lớp học", handleClick: handleOpenLeaveDialog },
+        ];
 
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
@@ -52,7 +54,13 @@ function OptionMenu({ role, handleOpenGetCodeDialog, handleOpenLeaveDialog, hand
                 onClose={handleClose}
             >
                 {options.map((option, index) => (
-                    <MenuItem key={index} onClick={option.handleClick}>
+                    <MenuItem 
+                        key={index} 
+                        onClick={() => {
+                            handleClose();
+                            option.handleClick();
+                        }}
+                    >
                         {option.title}
                     </MenuItem>
                 ))}

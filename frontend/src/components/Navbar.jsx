@@ -97,7 +97,7 @@ const Navbar = (props) => {
   const { pages } = props;
   const settings = ["Đăng xuất"];
 
-  const history = useNavigate();
+  const navigate = useNavigate();
 
   let avatar = null;
 
@@ -154,7 +154,7 @@ const Navbar = (props) => {
   const handleLogout = () => {
     handleCloseModalLogout();
     localStorage.clear();
-    history.replace("/");
+    navigate("/intro#about-us", { replace: true });
   };
 
   const ModalLogout = () => {
