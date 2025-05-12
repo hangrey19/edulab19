@@ -9,22 +9,22 @@ import { red } from "@mui/material/colors";
 const SocialMediaLinks = () => (
   <ul className="contact-list">
     <li>
-      <a href="https://www.facebook.com/duy.onix/">
+      <a href="https://www.facebook.com/takagi_kasumi/">
         <FacebookIcon fontSize="large" color="primary" />
       </a>
     </li>
     <li>
-      <a href="https://www.instagram.com/duyonix/">
+      <a href="https://www.instagram.com">
         <InstagramIcon fontSize="large" color="error" />
       </a>
     </li>
     <li>
-      <a href="https://twitter.com/duyonix">
+      <a href="https://twitter.com">
         <TwitterIcon fontSize="large" color="primary" />
       </a>
     </li>
     <li>
-      <a href="https://www.facebook.com/duy.onix/">
+      <a href="https://www.facebook.com">
         <TelegramIcon fontSize="large" color={red[50]} />
       </a>
     </li>
@@ -41,17 +41,16 @@ export default function Footer() {
             <Link to="/home" className="logo">
               <img src="/assets/img/Friendly_logo.png" alt="Our Logo" />
             </Link>
-            <h3>Lớp học thân thiện - Friendly Classroom</h3>
-            <p>&copy;Copyright HiFive Team</p>
+            <h3>Rèn luyện học tập - EduLab</h3>
           </div>
 
           {/* Address Section */}
           <div className="address div-4 col-sm-12 col-md-4 col-lg-4">
             <h3>Địa chỉ</h3>
             <ul>
-              <li>Trường Đại học Khoa học tự nhiên</li>
-              <li>Khoa Công nghệ thông tin</li>
-              <li>19CNTN</li>
+              <li>Học viện Công nghệ Bưu chính Viễn thông</li>
+              <li>Khoa Công nghệ thông tin I</li>
+              <li>D22CN</li>
             </ul>
           </div>
 

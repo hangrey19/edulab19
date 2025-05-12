@@ -1,25 +1,23 @@
 import React from "react";
-import { Route, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 function LayoutAuthIntro({ children }) {
   return <>{children}</>;
 }
 
-export default function AuthIntroTemplate({ path, Component }) {
+export default function AuthIntroTemplate({ Component }) {
+  // Chỉ kiểm tra xem có đăng nhập hay không
   const isLogin = !!localStorage.getItem("User");
 
-  if (isLogin) {
+  // Nếu có intro path (trang giới thiệu), render component được truyền vào
+  if (Component.name === "Intro" || !isLogin) {
     return (
-      <Route
-        path={path}
-        element={
-          <LayoutAuthIntro>
-            <Component />
-          </LayoutAuthIntro>
-        }
-      />
+      <LayoutAuthIntro>
+        <Component />
+      </LayoutAuthIntro>
     );
   }
 
-  return <Navigate to="/login" />;
+  // Nếu đăng nhập rồi và không phải trang intro, chuyển về home
+  return <Navigate to="/home" />;
 }
