@@ -11,7 +11,7 @@ export const fetchAllSubmission = (homeworkId) => {
     return (dispatch) => {
         dispatch(fetchAllSubmissionRequest());
         axios({
-            url: pathAPI + "submission/getAllSubmissionMetadataOfHomework",
+            url: pathAPI + "/submission/getAllSubmissionMetadataOfHomework",
             method: "POST",
             headers: {
                 "Authorization": "Bearer " + accessToken

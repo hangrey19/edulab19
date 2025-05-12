@@ -11,7 +11,7 @@ export const fetchAllScoreClassroom = (classroomId) => {
     return (dispatch) => {
         dispatch(fetchAllScoreClassroomRequest());
         axios({
-            url: pathAPI + "submission/getAllScoreOf1Class",
+            url: pathAPI + "/submission/getAllScoreOf1Class",
             method: "POST",
             headers: {
                 "Authorization": "Bearer " + accessToken
@@ -59,7 +59,7 @@ export const fetchAllScoreUser = (classroomId) => {
     return (dispatch) => {
         dispatch(fetchAllScoreUserRequest());
         axios({
-            url: pathAPI + "user/getAllScore",
+            url: pathAPI + "/user/getAllScore",
             method: "POST",
             headers: {
                 "Authorization": "Bearer " + accessToken

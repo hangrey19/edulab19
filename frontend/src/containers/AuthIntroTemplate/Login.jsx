@@ -110,8 +110,18 @@ function Login() {
   }
 
   if (data) {
-    console.log("direct", direct);
-    // return direct ? <Redirect to={direct} /> : <Redirect to="/home" />;
+    // Lưu role vào localStorage
+    if (data.user?.role) {
+      localStorage.setItem("role", data.user.role);
+    }
+    
+    // Chuyển hướng dựa trên role
+    if (data.user?.role === "teacher") {
+      return <Navigate to="/teacher/home" />;
+    } else if (data.user?.role === "student") {
+      return <Navigate to="/student/home" />;
+    }
+    // Fallback về trang home nếu không có role
     return <Navigate to="/home" />;
   }
 

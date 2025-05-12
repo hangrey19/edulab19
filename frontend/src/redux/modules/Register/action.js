@@ -6,7 +6,7 @@ export const registerUser = (user) => {
     return (dispatch) => {
         dispatch(actRegisterRequest())
         axios({
-            url: pathAPI + "authorize/signup",
+            url: pathAPI + "/authorize/signup",
             method: "POST",
             data: user
         })

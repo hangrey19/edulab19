@@ -74,9 +74,16 @@ class AuthorizeController {
     
             await newUser.save();
     
+            // Tạo token cho người dùng mới
+            const token = generateToken(newUser);
+            newUser.password = undefined;
+            newUser.username = undefined;
+    
             return res.status(200).json({
                 success: true,
-                message: "Người dùng đã được tạo !"
+                message: "Người dùng đã được tạo !",
+                token,
+                user: newUser
             });
     
         } catch (err) {

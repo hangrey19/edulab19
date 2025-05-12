@@ -6,7 +6,7 @@ export const loginUser = (user) => {
     return (dispatch) => {
         dispatch(actLoginRequest());
         axios({
-            url: pathAPI + "authorize/login",
+            url: pathAPI + "/authorize/login",
             method: "POST",
             data: user,
         })

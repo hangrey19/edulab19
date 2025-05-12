@@ -6,20 +6,34 @@ import {
     DialogContent,
     DialogTitle,
     TextField,
+    Snackbar,
+    Alert,
 } from "@mui/material";
-import React from "react";
-  
+import React, { useState } from "react";
+
 function DialogGetCodeClassroom(props) {
     const { openGetCodeDialog, handleCloseGetCodeDialog, classInfo } = props;
     const code = classInfo.code;
-  
+
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+
     const copyCodeToClipboard = () => {
-        navigator.clipboard.writeText(code);
-        handleCloseGetCodeDialog();
+        navigator.clipboard.writeText(code).then(() => {
+            // Hiển thị thông báo sao chép thành công
+            setOpenSnackbar(true);
+            // Đóng dialog sau một khoảng thời gian ngắn
+            setTimeout(() => {
+                handleCloseGetCodeDialog();
+            }, 1000); // Đợi 1 giây trước khi đóng dialog
+        });
     };
-  
+
+    const handleCloseSnackbar = () => {
+        setOpenSnackbar(false);
+    };
+
     return (
-        <div>
+        <>
             <Dialog
                 fullWidth
                 maxWidth="xs"
@@ -27,10 +41,9 @@ function DialogGetCodeClassroom(props) {
                 onClose={handleCloseGetCodeDialog}
             >
                 <DialogTitle sx={{ pb: 0 }}>Lớp học {classInfo.name}</DialogTitle>
-    
+
                 <DialogContent>
                     <Box component="form" noValidate sx={{ mt: 1 }}>
-                    
                         <TextField
                             margin="normal"
                             required
@@ -38,9 +51,8 @@ function DialogGetCodeClassroom(props) {
                             id="name"
                             label="Mã lớp học"
                             value={code}
-                            // variant="filled"
                             InputProps={{
-                            readOnly: true,
+                                readOnly: true,
                             }}
                             type="text"
                             name="name"
@@ -57,15 +69,24 @@ function DialogGetCodeClassroom(props) {
                     >
                         Hủy
                     </Button>
-                    
+
                     <Button variant="contained" onClick={copyCodeToClipboard}>
                         Sao chép mã
                     </Button>
                 </DialogActions>
             </Dialog>
-        </div>
+
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={2000} // Tự động ẩn sau 2 giây
+                onClose={handleCloseSnackbar}
+            >
+                <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: "100%" }}>
+                    Mã lớp học đã được sao chép!
+                </Alert>
+            </Snackbar>
+        </>
     );
 }
-  
+
 export default DialogGetCodeClassroom;
-  

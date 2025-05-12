@@ -1,121 +1,100 @@
-import React, { useEffect } from "react";
-import Box from "@mui/material/Box";
-import Tab from "@mui/material/Tab";
+import React, { useEffect, useState } from "react";
+import { Box, Tab, Typography } from "@mui/material";
 import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
 import VerticalListHomework from "./VerticalListHomework";
-import { makeStyles } from "@mui/styles";
+import NotInterestedIcon from "@mui/icons-material/NotInterested";
+import Loading from "./Loading";
 import { useDispatch, useSelector } from "react-redux";
 import {
   actFetchDocumentList,
   actFetchHomeworkList,
 } from "../redux/modules/Homework/action";
-import Loading from "./Loading";
-import NotInterestedIcon from "@mui/icons-material/NotInterested";
-const useStyles = makeStyles({
-  label: {
-    fontSize: 18,
-  },
-});
 
 export default function ListHomework() {
-  const [value, setValue] = React.useState("homework");
-  const classes = useStyles();
-  let id = null;
-  if (localStorage.getItem("classroomId")) {
-    id = localStorage.getItem("classroomId");
-  }
+  const [value, setValue] = useState("homework");
+  const dispatch = useDispatch();
+  const classroomId = localStorage.getItem("classroomId");
+
+  const {
+    data: dataHomework,
+    loading: loadingHomework,
+    err: errHomework,
+    key: keyHomework,
+  } = useSelector((state) => state.homeworkReducer);
+
+  const {
+    data: dataDocument,
+    loading: loadingDocument,
+    err: errDocument,
+    key: keyDocument,
+  } = useSelector((state) => state.documentReducer);
+
+  useEffect(() => {
+    if (classroomId) {
+      dispatch(actFetchHomeworkList(classroomId));
+      dispatch(actFetchDocumentList(classroomId));
+    }
+  }, [dispatch, classroomId]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(actFetchHomeworkList(id));
-    dispatch(actFetchDocumentList(id));
-    // eslint-disable-next-line
-  }, []);
-  const dataHomework = useSelector((state) => state.homeworkReducer?.data);
-  const loadingHomework = useSelector(
-    (state) => state.homeworkReducer?.loading
-  );
-  const errHomework = useSelector((state) => state.homeworkReducer?.err);
-  const keyHomework = useSelector((state) => state.homeworkReducer?.key);
 
-  const dataDocument = useSelector((state) => state.documentReducer?.data);
-  const loadingDocument = useSelector(
-    (state) => state.documentReducer?.loading
-  );
-  const errDocument = useSelector((state) => state.documentReducer?.err);
-  const keyDocument = useSelector((state) => state.documentReducer?.key);
+  if (loadingHomework || loadingDocument) return <Loading />;
 
-  if (loadingHomework || loadingDocument) {
-    return <Loading />;
-  }
-  if (errHomework) {
-    console.log(errHomework);
-  }
-  if (errDocument) {
-    console.log(errDocument);
+  if (errHomework || errDocument) {
+    return (
+      <Box sx={{ textAlign: "center", mt: 5 }}>
+        <Typography variant="h6" color="error">
+          Đã xảy ra lỗi khi tải dữ liệu!
+        </Typography>
+      </Box>
+    );
   }
 
   return (
-    <div className="list-homework">
-      <Box sx={{ width: "100%", typography: "body1" }}>
-        <TabContext value={value}>
-          <Box>
-            <TabList centered onChange={handleChange}>
-              <Tab
-                label="Danh sách bài tập"
-                className={classes.label}
-                value="homework"
-              />
-              <Tab
-                className={classes.label}
-                label="Danh sách tài liệu"
-                value="document"
-              />
-            </TabList>
-          </Box>
+    <Box className="list-homework" sx={{ width: "100%" }}>
+      <TabContext value={value}>
+        <TabList centered onChange={handleChange}>
+          <Tab label="Danh sách bài tập" value="homework" />
+          <Tab label="Danh sách tài liệu" value="document" />
+        </TabList>
 
-          <TabPanel value="homework">
-            {dataHomework?.length === 0 ? (
-              <h3 className="notification-nothing">
-                <NotInterestedIcon
-                  fontSize="large"
-                  style={{ color: "red", marginRight: 10 }}
-                />
-                Hiện không có bài tập nào!
-              </h3>
-            ) : (
-              <VerticalListHomework
-                type={"Homework"}
-                listHomework={dataHomework}
-                keySearch={keyHomework}
-              />
-            )}
-          </TabPanel>
+        <TabPanel value="homework">
+          {dataHomework?.length === 0 ? (
+            <Notification message="Hiện không có bài tập nào!" />
+          ) : (
+            <VerticalListHomework
+              type="Homework"
+              listHomework={dataHomework}
+              keySearch={keyHomework}
+            />
+          )}
+        </TabPanel>
 
-          <TabPanel value="document">
-            {dataHomework?.length === 0 ? (
-              <h3 className="notification-nothing">
-                <NotInterestedIcon
-                  fontSize="large"
-                  style={{ color: "red", marginRight: 10 }}
-                />
-                Hiện không có tài liệu nào!
-              </h3>
-            ) : (
-              <VerticalListHomework
-                type={"Document"}
-                listHomework={dataDocument}
-                keySearch={keyDocument}
-              />
-            )}
-          </TabPanel>
-        </TabContext>
-      </Box>
-    </div>
+        <TabPanel value="document">
+          {dataDocument?.length === 0 ? (
+            <Notification message="Hiện không có tài liệu nào!" />
+          ) : (
+            <VerticalListHomework
+              type="Document"
+              listHomework={dataDocument}
+              keySearch={keyDocument}
+            />
+          )}
+        </TabPanel>
+      </TabContext>
+    </Box>
+  );
+}
+
+function Notification({ message }) {
+  return (
+    <Typography className="notification-nothing" variant="h6" sx={{ display: "flex", alignItems: "center", justifyContent: "center", color: "red" }}>
+      <NotInterestedIcon sx={{ mr: 1 }} />
+      {message}
+    </Typography>
   );
 }

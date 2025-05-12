@@ -1,4 +1,4 @@
-const cloudinary = require('../cloudinary/configCloudinary');
+const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema.Types;
 const argon2 = require('argon2')
@@ -8,6 +8,13 @@ const User = require('../models/User');
 const Homework = require('../models/Homework');
 const Submission = require('../models/Submission');
 const Classroom = require('../models/Classroom');
+
+// Cấu hình cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const findHomeworkIndex = (temp, homeworkId) => {
     console.log(temp);
@@ -62,7 +69,7 @@ createDefaultAvatarForUser = async (fullName) => {
     const splited = fullName.trim().split(' ');
     const character = splited[splited.length - 1][0].toUpperCase();
 
-    const publicId = `avatar/not_avatar/${character}`;
+    const publicId = `avatars/not_avatar/${character}`;
 
     // Tạo url xem ảnh (cloudinary sẽ tự sinh url theo publicId)
     const url = cloudinary.url(publicId, {
@@ -73,12 +80,12 @@ createDefaultAvatarForUser = async (fullName) => {
 };
 
 class UserController {
-    getInformation = (req, res) => {
+    getInformation = async (req, res) => {
         try {
             const userId = req.userId;
             const username = req.username;
 
-            User.findOne({ _id: userId })
+            const user = await User.findOne({ _id: userId })
                 .populate({
                     path: 'classStudent classTeacher',
                     select: 'name code description teacherId numberOfMember',
@@ -86,21 +93,17 @@ class UserController {
                         path: 'teacherId',
                         select: 'fullName avatarUrl',
                     },
-                })
-                .exec(async function(err, user) {
-                    try {
-                        if (err) {
-                            throw new Error('ERROR');
-                        }
-                    } 
-                    catch (err) {
-                        return res.status(400).json({ success: false, message: 'Lỗi rồi :(' });
-                    }
-                    return res.status(200).json({ success: true, user });
                 });
+
+            if (!user) {
+                return res.status(400).json({ success: false, message: 'Lỗi rồi :(' });
+            }
+
+            return res.status(200).json({ success: true, user });
         } 
         catch (err) {
             console.log(err);
+            return res.status(400).json({ success: false, message: 'Lỗi rồi :(' });
         }
     };
 
@@ -114,15 +117,12 @@ class UserController {
                 return res.status(400).json({ success: false, message: 'Bạn chưa chọn ảnh avatar!' });
             }
     
-            const ext = avatar.originalname.split('.').pop();
-            const filename = `${userId}.${ext}`;
-    
             // Upload lên Cloudinary
             const result = await cloudinary.uploader.upload(avatar.path, {
                 folder: 'avatar',            // upload vào thư mục avatar/
-                public_id: userId,            // tên file chính là userId (ví dụ 123.jpg)
-                overwrite: true,              // ghi đè nếu đã có
-                resource_type: "image"        // xác định đây là ảnh
+                public_id: userId,           // tên file chính là userId
+                overwrite: true,             // ghi đè nếu đã có
+                resource_type: "image"       // xác định đây là ảnh
             });
     
             // Sau khi upload xong
@@ -137,11 +137,22 @@ class UserController {
             // Xóa file tạm local
             await fs.emptyDir('uploads/');
     
-            return res.status(200).json({ success: true, message: 'Thay đổi avatar thành công !!!' });
+            return res.status(200).json({ 
+                success: true, 
+                message: 'Thay đổi avatar thành công !!!',
+                avatarUrl: avatarUrl 
+            });
     
         } catch (err) {
             console.log(err);
-            return res.status(400).json({ success: false, message: 'Lỗi rồi :<' });
+            // Xóa file tạm nếu có lỗi
+            if (req.file) {
+                await fs.emptyDir('uploads/');
+            }
+            return res.status(400).json({ 
+                success: false, 
+                message: err.message || 'Lỗi khi thay đổi avatar' 
+            });
         }
     };
     

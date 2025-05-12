@@ -13,7 +13,7 @@ export const fetchUserInfo = () => {
     return (dispatch) => {
         dispatch(fetchUserInfoRequest());
         axios({
-            url: pathAPI + "user/getInformation",
+            url: pathAPI + "/user/getInformation",
             method: "GET",
             headers: {
                 "Authorization": "Bearer " + accessToken
@@ -60,7 +60,7 @@ export const createClassroom = (data) => {
     return (dispatch) => {
         dispatch(createClassroomRequest());
         axios({
-            url: pathAPI + "classroom/create",
+            url: pathAPI + "/classroom/create",
             method: "POST",
             headers: {
                 "Authorization": "Bearer " + accessToken

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { Button, Box, TextField, Typography, Stack } from "@mui/material";
 import TitleIcon from "@mui/icons-material/Title";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -12,6 +12,8 @@ import { actFetchHomeworkDetailList } from "../redux/modules/Homework/action";
 import Loading from "./Loading";
 import MobileDateTimePicker from "@mui/lab/MobileDateTimePicker";
 import { useNavigate } from "react-router-dom";
+import { shallowEqual } from "react-redux"; // Import shallowEqual for optimization
+import { startTransition } from "react"; // Import startTransition for concurrent rendering
 
 function HomeworkInfo() {
   const classInfo = JSON.parse(localStorage.getItem("classInfo"));
@@ -20,14 +22,16 @@ function HomeworkInfo() {
   const history = useNavigate();
   const dispatch = useDispatch();
 
-  const data = useSelector((state) => state.homeworkDetailReducer.data);
-  const loading = useSelector((state) => state.homeworkDetailReducer.loading);
-  const err = useSelector((state) => state.homeworkDetailReducer.err);
+  // Using shallowEqual to optimize selector
+  const data = useSelector((state) => state.homeworkDetailReducer.data, shallowEqual);
+  const loading = useSelector((state) => state.homeworkDetailReducer.loading, shallowEqual);
+  const err = useSelector((state) => state.homeworkDetailReducer.err, shallowEqual);
 
   useEffect(() => {
-    dispatch(actFetchHomeworkDetailList(homeworkId));
-    // eslint-disable-next-line
-  }, []);
+    startTransition(() => {
+      dispatch(actFetchHomeworkDetailList(homeworkId));
+    });
+  }, [homeworkId, dispatch]);
 
   const format2Digits = (n) => {
     return n < 10 ? "0" + n : n;
@@ -54,207 +58,191 @@ function HomeworkInfo() {
   }
 
   return (
-    <section className="homework-info">
-      <div className="header">
-        <Link
-          to={{ pathname: `/classroom/${classroomId}/stream` }}
-          style={{ textDecoration: "none" }}
-        >
-          <div className="classroom-name">{classInfo.name}</div>
-        </Link>
-        <Stack direction="row" spacing={2}>
-          <Button
-            variant="contained"
-            color="error"
-            className="btn-add"
-            onClick={() => history.goBack()}
+    <Suspense fallback={<Loading />}>
+      <section className="homework-info">
+        <div className="header">
+          <Link
+            to={{ pathname: `/classroom/${classroomId}/stream` }}
+            style={{ textDecoration: "none" }}
           >
-            Quay về
-          </Button>
-        </Stack>
-      </div>
-
-      {/* <Box className="box-notice">{renderNotice()}</Box> */}
-
-      <Box className="content" component="form" noValidate>
-        <div className="row">
-          <div className="col-md-9 left">
-            <Box className="input-box">
-              <TitleIcon
-                fontSize="large"
-                color="action"
-                className="icon-input"
-              />
-              <TextField
-                variant="filled"
-                // inputRef={inputName}
-                margin="normal"
-                required
-                fullWidth
-                id="title"
-                label="Tiêu đề"
-                type="text"
-                name="title"
-                autoComplete="off"
-                defaultValue={data?.homework?.title}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </Box>
-            <Box className="input-box">
-              <DescriptionIcon
-                fontSize="large"
-                color="action"
-                className="icon-input"
-              />
-              <TextField
-                variant="filled"
-                // inputRef={inputName}
-                margin="normal"
-                // required
-                fullWidth
-                id="description"
-                label="Mô tả nội dung"
-                type="text"
-                name="description"
-                autoComplete="off"
-                multiline
-                defaultValue={data?.homework?.description}
-                minRows={5}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </Box>
-            <Box
-              className="input-box"
-              style={{ alignItems: "flex-start", marginTop: "1rem" }}
+            <div className="classroom-name">{classInfo.name}</div>
+          </Link>
+          <Stack direction="row" spacing={2}>
+            <Button
+              variant="contained"
+              color="error"
+              className="btn-add"
+              onClick={() => history.goBack()}
             >
-              <AttachFileIcon
-                fontSize="large"
-                color="action"
-                className="icon-input"
-              />
-              {data?.homework.fileAttributes.length === 0 ? (
-                <div
-                  className="drop-zone"
-                  style={{
-                    border: "2px solid #bbb",
-                    minHeight: 50,
-                    padding: "0 10px",
-                    borderRadius: 5,
+              Quay về
+            </Button>
+          </Stack>
+        </div>
+
+        <Box className="content" component="form" noValidate>
+          <div className="row">
+            <div className="col-md-9 left">
+              <Box className="input-box">
+                <TitleIcon fontSize="large" color="action" className="icon-input" />
+                <TextField
+                  variant="filled"
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="title"
+                  label="Tiêu đề"
+                  type="text"
+                  name="title"
+                  autoComplete="off"
+                  defaultValue={data?.homework?.title}
+                  InputProps={{
+                    readOnly: true,
                   }}
-                >
-                  {/* <div className="up-arrow"></div> */}
-                  Bài tập này không có file đính kèm
-                </div>
-              ) : (
-                ""
-              )}
-              <div className="files">
-                {data?.homework.fileAttributes.length !== 0 ? (
+                />
+              </Box>
+              <Box className="input-box">
+                <DescriptionIcon fontSize="large" color="action" className="icon-input" />
+                <TextField
+                  variant="filled"
+                  margin="normal"
+                  fullWidth
+                  id="description"
+                  label="Mô tả nội dung"
+                  type="text"
+                  name="description"
+                  autoComplete="off"
+                  multiline
+                  defaultValue={data?.homework?.description}
+                  minRows={5}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+              </Box>
+              <Box
+                className="input-box"
+                style={{ alignItems: "flex-start", marginTop: "1rem" }}
+              >
+                <AttachFileIcon fontSize="large" color="action" className="icon-input" />
+                {data?.homework.fileAttributes.length === 0 ? (
                   <div
-                    className="card"
+                    className="drop-zone"
                     style={{
-                      width: "100%",
-                      borderRadius: 10,
-                      boxShadow:
-                        "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
+                      border: "2px solid #bbb",
+                      minHeight: 50,
+                      padding: "0 10px",
+                      borderRadius: 5,
                     }}
                   >
-                    <div className="card-body d-flex p-3 file-info">
-                      <img
-                        src={pathImgFromIndex + "file.png"}
-                        alt="file img"
-                        height="100"
-                        style={{ marginRight: 20, marginLeft: -20 }}
-                      />
-                      <div className="info-file-block" style={{ width: "80%" }}>
-                        <div className="info d-flex justify-content-between">
-                          <div>
-                            <h5
-                              className="card-title"
-                              style={{
-                                whiteSpace: "nowrap",
-                                textOverflow: "ellipsis",
-                                overflow: "hidden",
-                              }}
-                            >
-                              {data?.homework?.fileAttributes[0].name}
-                            </h5>
-                            <h6 className="card-subtitle mb-2 text-muted">
-                              Kích thước:{" "}
-                              {data?.homework?.fileAttributes[0].size}
-                            </h6>
-                            <h6 className="card-subtitle mb-2 text-muted">
-                              Loại:{" "}
-                              {data?.homework?.fileAttributes[0].extension}
-                            </h6>
-                            <h6 className="card-subtitle mb-2 text-muted">
-                              Đăng tải: {convertDate(data?.homework?.updatedAt)}
-                            </h6>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    Bài tập này không có file đính kèm
                   </div>
                 ) : (
                   ""
                 )}
-              </div>
-            </Box>
-          </div>
+                <div className="files">
+                  {data?.homework.fileAttributes.length !== 0 ? (
+                    <div
+                      className="card"
+                      style={{
+                        width: "100%",
+                        borderRadius: 10,
+                        boxShadow:
+                          "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
+                      }}
+                    >
+                      <div className="card-body d-flex p-3 file-info">
+                        <img
+                          src={pathImgFromIndex + "file.png"}
+                          alt="file img"
+                          height="100"
+                          style={{ marginRight: 20, marginLeft: -20 }}
+                        />
+                        <div className="info-file-block" style={{ width: "80%" }}>
+                          <div className="info d-flex justify-content-between">
+                            <div>
+                              <h5
+                                className="card-title"
+                                style={{
+                                  whiteSpace: "nowrap",
+                                  textOverflow: "ellipsis",
+                                  overflow: "hidden",
+                                }}
+                              >
+                                {data?.homework?.fileAttributes[0].name}
+                              </h5>
+                              <h6 className="card-subtitle mb-2 text-muted">
+                                Kích thước:{" "}
+                                {data?.homework?.fileAttributes[0].size}
+                              </h6>
+                              <h6 className="card-subtitle mb-2 text-muted">
+                                Loại:{" "}
+                                {data?.homework?.fileAttributes[0].extension}
+                              </h6>
+                              <h6 className="card-subtitle mb-2 text-muted">
+                                Đăng tải: {convertDate(data?.homework?.updatedAt)}
+                              </h6>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+                </div>
+              </Box>
+            </div>
 
-          <div className="col-md-3 right">
-            <Box sx={{ pb: 2 }}>
-              <Typography className="input-label">Điểm</Typography>
-              <TextField
-                variant="outlined"
-                id="grade"
-                name="grade"
-                type="number"
-                label="-"
-                fullWidth
-                defaultValue="10"
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </Box>
-            <Box sx={{ pb: 2 }}>
-              <Typography className="input-label">Hạn nộp</Typography>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <MobileDateTimePicker
+            <div className="col-md-3 right">
+              <Box sx={{ pb: 2 }}>
+                <Typography className="input-label">Điểm</Typography>
+                <TextField
+                  variant="outlined"
+                  id="grade"
+                  name="grade"
+                  type="number"
                   label="-"
                   fullWidth
-                  renderInput={(props) => <TextField {...props} />}
-                  inputFormat="dd/MM/yyyy hh:mm a"
-                  mask="_/__/____ __:__ _M"
-                  value={data?.homework?.deadline}
-                  readOnly={false}
-                  open={false}
+                  defaultValue="10"
+                  InputProps={{
+                    readOnly: true,
+                  }}
                 />
-              </LocalizationProvider>
-            </Box>
-            <Box sx={{ pb: 2 }}>
-              <Typography className="input-label">Chủ đề</Typography>
-              <TextField
-                variant="outlined"
-                id="topic"
-                name="topic"
-                label="-"
-                fullWidth
-                defaultValue={data?.homework?.topic}
-                InputProps={{
-                  readOnly: true,
-                }}
-              />
-            </Box>
+              </Box>
+              <Box sx={{ pb: 2 }}>
+                <Typography className="input-label">Hạn nộp</Typography>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <MobileDateTimePicker
+                    label="-"
+                    fullWidth
+                    renderInput={(props) => <TextField {...props} />}
+                    inputFormat="dd/MM/yyyy hh:mm a"
+                    mask="_/__/____ __:__ _M"
+                    value={data?.homework?.deadline}
+                    readOnly={false}
+                    open={false}
+                  />
+                </LocalizationProvider>
+              </Box>
+              <Box sx={{ pb: 2 }}>
+                <Typography className="input-label">Chủ đề</Typography>
+                <TextField
+                  variant="outlined"
+                  id="topic"
+                  name="topic"
+                  label="-"
+                  fullWidth
+                  defaultValue={data?.homework?.topic}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+              </Box>
+            </div>
           </div>
-        </div>
-      </Box>
-    </section>
+        </Box>
+      </section>
+    </Suspense>
   );
 }
 
