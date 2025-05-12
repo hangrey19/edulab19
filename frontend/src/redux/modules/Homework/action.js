@@ -9,7 +9,7 @@ export const actFetchHomeworkList = (id) => {
     return (dispatch) => {
         dispatch(actHomeworkRequest());
         axios({
-            url: pathAPI + "homework/getAllHomeworkMetadataOfClass",
+            url: pathAPI + "/homework/getAllHomeworkMetadataOfClass",
             method: "POST",
             data: { classroomId: id },
             headers: {
@@ -72,7 +72,7 @@ export const actFetchHomeworkDetailList = (id) => {
     return (dispatch) => {
         dispatch(actHomeworkDetailRequest());
         axios({
-            url: pathAPI + "homework/getHomeworkDetail",
+            url: pathAPI + "/homework/getHomeworkDetail",
             method: "POST",
             data: { homeworkId: id },
             headers: {
@@ -131,7 +131,7 @@ export const actFetchDocumentList = (id) => {
     return (dispatch) => {
         dispatch(actDocumentRequest());
         axios({
-            url: pathAPI + "document/getAllDocumentMetadataOfClass",
+            url: pathAPI + "/document/getAllDocumentMetadataOfClass",
             method: "POST",
             data: { classroomId: id },
             headers: {
@@ -193,7 +193,7 @@ export const actFetchDocumentDetailList = (id) => {
     return (dispatch) => {
         dispatch(actDocumentDetailRequest());
         axios({
-            url: pathAPI + "document/download",
+            url: pathAPI + "/document/download",
             method: "POST",
             data: { documentId: id },
             headers: {
@@ -250,7 +250,7 @@ export const createHomework = (data) => {
     return (dispatch) => {
         dispatch(createHomeworkRequest());
         axios({
-            url: pathAPI + "homework/createHomework",
+            url: pathAPI + "/homework/createHomework",
             method: "POST",
             headers: {
                 "Authorization": "Bearer " + accessToken,
@@ -312,7 +312,7 @@ export const createDocument = (data) => {
     return (dispatch) => {
         dispatch(createDocumentRequest());
         axios({
-            url: pathAPI + "document/upload",
+            url: pathAPI + "/document/upload",
             method: "POST",
             headers: {
                 "Authorization": "Bearer " + accessToken,

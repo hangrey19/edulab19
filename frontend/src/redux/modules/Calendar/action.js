@@ -11,7 +11,7 @@ export const fetchAllCalendar = (classroomId) => {
     return (dispatch) => {
         dispatch(fetchAllCalendarRequest());
         axios({
-            url: pathAPI + "user/calendar",
+            url: pathAPI + "/user/calendar",
             method: "GET",
             headers: {
                 "Authorization": "Bearer " + accessToken

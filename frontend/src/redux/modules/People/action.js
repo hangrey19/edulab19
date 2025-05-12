@@ -10,7 +10,7 @@ export const actFetchPeopleList = (classroomId) => {
     return (dispatch) => {
         dispatch(actPeopleRequest());
         axios({
-            url: pathAPI + `classroom/${classroomId}/people`,
+            url: pathAPI + "/classroom/" + classroomId + "/people",
             method: "GET",
             headers: {
                 "Authorization": "Bearer " + accessToken
@@ -81,7 +81,7 @@ export const actInviteStudent = (classroomId, username) => {
     return (dispatch) => {
         dispatch(actInviteStudentRequest());
         axios({
-            url: pathAPI + "classroom/" + classroomId + "/inviteStudent",
+            url: pathAPI + "/classroom/" + classroomId + "/inviteStudent",
             method: "PUT",
             data: { username: username },
             headers: {
@@ -135,7 +135,7 @@ export const actDeleteStudent = (classroomId, idStudent) => {
     return (dispatch) => {
         dispatch(actDeleteStudentRequest());
         axios({
-            url: pathAPI + "classroom/" + classroomId + "/removeStudent",
+            url: pathAPI + "/classroom/" + classroomId + "/removeStudent",
             method: "PUT",
             data: { studentId: idStudent },
             headers: {

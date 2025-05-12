@@ -8,7 +8,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { Alert } from "@mui/material";
+import { Alert, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { useDispatch } from "react-redux";
 import {
   registerUser,
@@ -33,6 +33,7 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [emptyFieldNotice, setEmptyFieldNotice] = useState(false);
   const [render, setRender] = useState(false);
+  const [emptyRoleNotice, setEmptyRoleNotice] = useState(false);
 
   // state để dispatch lên action Register
   const [state, setState] = useState({
@@ -41,6 +42,7 @@ function Register() {
     email: "",
     fullName: "",
     phoneNumber: "",
+    role: "",
   });
 
   const dispatch = useDispatch();
@@ -158,6 +160,12 @@ function Register() {
     }
   };
 
+  const handleValidationRole = () => {
+    if (state.role === "") {
+      setEmptyRoleNotice(true);
+    }
+  };
+
   useEffect(() => {
     setTimeout(handleReset, 1500);
     setState({
@@ -166,6 +174,7 @@ function Register() {
       email: "",
       fullName: "",
       phoneNumber: "",
+      role: "",
     });
     setConfirmPassword("");
     //eslint-disable-next-line
@@ -203,6 +212,10 @@ function Register() {
       setTimeout(() => setIsValidPhoneNumber(false), 1500);
       return <Alert severity="error">Số điện thoại không phù hợp</Alert>;
     }
+    if (emptyRoleNotice) {
+      setTimeout(() => setEmptyRoleNotice(false), 1500);
+      return <Alert severity="error">Vui lòng chọn vai trò của bạn</Alert>;
+    }
     if (err) {
       return <Alert severity="error">{err?.response.data.message}</Alert>;
     }
@@ -231,7 +244,8 @@ function Register() {
       confirmPassword !== state.password ||
       state.fullName === "" ||
       state.email === "" ||
-      state.phoneNumber === ""
+      state.phoneNumber === "" ||
+      state.role === ""
     ) {
       setEmptyFieldNotice(true);
       return;
@@ -370,6 +384,23 @@ function Register() {
                   onChange={handleChange}
                   onBlur={validationPhoneNumber}
                 />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth required>
+                  <InputLabel id="role-label">Vai trò</InputLabel>
+                  <Select
+                    labelId="role-label"
+                    id="role"
+                    name="role"
+                    value={state.role}
+                    label="Vai trò"
+                    onChange={handleChange}
+                    onBlur={handleValidationRole}
+                  >
+                    <MenuItem value="student">Học sinh</MenuItem>
+                    <MenuItem value="teacher">Giáo viên</MenuItem>
+                  </Select>
+                </FormControl>
               </Grid>
             </Grid>
 

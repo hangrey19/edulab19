@@ -26,7 +26,7 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import Modal from "@mui/material/Modal";
 import { useState } from "react";
 import HelpOutlinedIcon from "@mui/icons-material/HelpOutlined";
-import { pathImgFromIndex } from "../utils/constants";
+import { pathImgFromIndex, DEFAULT_AVATAR_URL } from "../utils/constants";
 import { useSelector } from "react-redux";
 
 function ScrollTop(props) {
@@ -103,13 +103,23 @@ const Navbar = (props) => {
 
   const data = useSelector((state) => state.fetchUserInfoReducer.data);
 
+  const getDefaultAvatar = (name) => {
+    if (!name) return "https://res.cloudinary.com/dqukpnbqr/image/upload/v1/avatars/not_avatar/A.png";
+    const firstLetter = name.charAt(0).toUpperCase();
+    return `https://res.cloudinary.com/dqukpnbqr/image/upload/v1/avatars/not_avatar/${firstLetter}.png`;
+  };
+
   if (localStorage.getItem("avatar")) {
     avatar = localStorage.getItem("avatar");
-  } else if (data) {
-    localStorage.setItem("avatar", data?.user.avatarUrl);
-    avatar = data?.user.avatarUrl;
+  } else if (data?.user) {
+    if (data.user.avatarUrl) {
+      localStorage.setItem("avatar", data.user.avatarUrl);
+      avatar = data.user.avatarUrl;
+    } else {
+      avatar = getDefaultAvatar(data.user.name);
+    }
   } else {
-    avatar = pathImgFromIndex + "avatar.png";
+    avatar = getDefaultAvatar(null);
   }
 
   //console.log("avatar", avatar);
@@ -251,10 +261,11 @@ const Navbar = (props) => {
                 {pages.map((page, index) => (
                   <NavLink
                     key={index}
-                    className="nav-page-link-mobile"
-                    exact
+                    className={({ isActive }) => 
+                      isActive ? "nav-page-link-mobile nav-link-active" : "nav-page-link-mobile"
+                    }
+                    end
                     to={page.route}
-                    activeStyle={{ color: "#1e62f5" }}
                   >
                     <MenuItem>
                       <span style={{ margin: "0 auto" }}>{page.name}</span>
@@ -283,10 +294,11 @@ const Navbar = (props) => {
               {pages.map((page, index) => (
                 <Button key={index} className="nav-page-item">
                   <NavLink
-                    exact
+                    end
                     to={page.route}
-                    className="nav-link"
-                    activeClassName="nav-link-active"
+                    className={({ isActive }) => 
+                      isActive ? "nav-link nav-link-active" : "nav-link"
+                    }
                   >
                     {page.name}
                   </NavLink>

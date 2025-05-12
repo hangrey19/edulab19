@@ -11,7 +11,7 @@ export const fetchAllTodo = () => {
     return (dispatch) => {
         dispatch(fetchAllTodoRequest());
         axios({
-            url: pathAPI + "user/todo",
+            url: pathAPI + "/user/todo",
             method: "GET",
             headers: {
                 "Authorization": "Bearer " + accessToken

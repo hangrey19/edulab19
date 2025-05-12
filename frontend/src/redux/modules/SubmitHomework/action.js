@@ -10,7 +10,7 @@ export const actFetchSubmission = (homeworkId, studentId) => {
     return (dispatch) => {
         dispatch(actSubmissionRequest());
         axios({
-            url: pathAPI + "submission/getSubmission",
+            url: pathAPI + "/submission/getSubmission",
             method: "POST",
             data: { homeworkId, studentId },
             headers: {
@@ -69,7 +69,7 @@ export const actDeleteSubmission = (homeworkId) => {
     return (dispatch) => {
         dispatch(actDeleteSubmissionRequest());
         axios({
-            url: pathAPI + "submission/deleteSubmission",
+            url: pathAPI + "/submission/deleteSubmission",
             method: "POST",
             data: { homeworkId },
             headers: {
@@ -134,7 +134,7 @@ export const actSubmitHomework = (userId, file, homeworkId) => {
     return (dispatch) => {
         dispatch(actSubmitHomeworkRequest());
         axios({
-            url: pathAPI + "submission/submitSubmission",
+            url: pathAPI + "/submission/submitSubmission",
             method: "POST",
             data: formData,
             headers: {
